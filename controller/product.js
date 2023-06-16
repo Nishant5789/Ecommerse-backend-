@@ -1,8 +1,9 @@
 const {Product} = require('../model/product')
 
 module.exports.addProduct = async (req, res)=>{
-    const product = Product(req.body);
+    http://localhost:8080/products
     try {
+        const product = new Product(req.body);
         await product.save();
 
         res.status(201).json(product);

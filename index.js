@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const productRoute = require('./routes/product');
+const categoryRoute = require('./routes/category');
+const brandsRoute = require('./routes/brands');
 
 const connectDB = async () => {
     try {
@@ -24,10 +26,12 @@ const startApp = async () => {
     app.use(express.json());
 
     app.get('/', (req, res) => {
-        res.send("connected")
+        res.send("connected");
     });
 
     app.use('/products', productRoute);
+    app.use('/category', categoryRoute);
+    app.use('/brands', brandsRoute);
 
     app.listen(process.env.SERVER_PORT, ()=>{
         console.log(`listening on port  ${process.env.SERVER_PORT}`);
