@@ -1,8 +1,10 @@
 const express = require('express');
 const app = express();
+const cors = require('cors');
 const mongoose = require('mongoose');
 require('dotenv').config();
 
+const productRoute = require('./routes/product');
 
 const connectDB = async () => {
     try {
@@ -25,11 +27,7 @@ const startApp = async () => {
         res.send("connected")
     });
 
-    app.get('/', (req, res) => {
-        res.send("connected")
-    });
-
-    
+    app.use('/products', productRoute);
 
     app.listen(process.env.SERVER_PORT, ()=>{
         console.log(`listening on port  ${process.env.SERVER_PORT}`);

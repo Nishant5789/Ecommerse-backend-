@@ -1,3 +1,7 @@
-const router = require('express').router();
+const router = require('express').Router();
+const {addProduct, fetchAllProducts} =  require('../controller/product')
 
-router.get("/", )
+router.post("/",  addProduct);
+router.get("/",  fetchAllProducts);
+
+module.exports = router;
