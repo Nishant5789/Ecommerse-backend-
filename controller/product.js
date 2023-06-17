@@ -5,10 +5,32 @@ module.exports.addProduct = async (req, res)=>{
     try {
         const product = new Product(req.body);
         await product.save();
-
         res.status(201).json(product);
     } catch (error) {
         console.log(error);
+        return res.status(400).json(error);
+    }
+}
+module.exports.fetchProductById = async (req, res)=>{
+    http://localhost:8080/:id
+    try {
+        console.log(req.params.id);
+        const product = await Product.findById(req.params.id);
+        // console.log(product);
+        res.status(201).json(product);
+    } catch (error) {
+        console.log(error);
+        return res.status(400).json(error);
+    }
+}
+module.exports.updateProduct = async (req, res)=>{
+    http://localhost:8080/
+    try {
+        const product = await Product.findByIdAndUpdate(req.params.id, req.body, {new: true});
+        res.status(201).json(product);
+    } catch (error) { 
+        console.log(error);
+        return res.status(400).json(error);
     }
 }
 module.exports.fetchAllProducts = async (req, res)=>{
@@ -50,5 +72,6 @@ module.exports.fetchAllProducts = async (req, res)=>{
         res.status(201).json(docs);
     } catch (error) {
         console.log(error);
+        return res.status(400).json(error);
     }
 }
