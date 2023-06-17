@@ -1,6 +1,7 @@
 const {Product} = require('../model/product')
 
 module.exports.addProduct = async (req, res)=>{
+
     http://localhost:8080/products
     try {
         const product = new Product(req.body);
@@ -39,19 +40,25 @@ module.exports.fetchAllProducts = async (req, res)=>{
     
     // filter = {"category":["smartphone","laptops"]}
     // sort = {_sort:"price",_order="desc"}
-    // pagination = {_page:1,_limit=10}
+    // pagination = {_page:1,_limit=10}  
     
     try {
-        let query = Product.find({});
-        let totalProductsQuery = Product.find({});
+        const condition = {};
+        if(req.query.admin == null) 
+        {  
+            condition.deleted = {$ne: true};
+        }
+
+        let query = Product.find(condition);
+        let totalProductsQuery = Product.find(condition);
 
         if(req.query.category){
             query = query.find({"category":req.query.category});
             totalProductsQuery = totalProductsQuery.find({"category":req.query.category});
         }
         if(req.query.brand){
-            query = query.find({"category":req.query.brand});
-            totalProductsQuery = totalProductsQuery.find({"category":req.query.brand});
+            query = query.find({"brand":req.query.brand});
+            totalProductsQuery = totalProductsQuery.find({"brand":req.query.brand});
         }
         if(req.query._sort && req.query._order){
             query = query.sort({[req.query._sort]: req.query._order});
