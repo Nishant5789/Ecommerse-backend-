@@ -2,6 +2,10 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const crypto = require('crypto');
 require('dotenv').config();
 
 const productRoute = require('./routes/product');
@@ -11,6 +15,9 @@ const authRoute = require('./routes/auth');
 const cartRoute = require('./routes/cart');
 const userRoute = require('./routes/user');
 const orderRoute = require('./routes/order');
+
+const {User} = require('./model/user');
+const { sanitizeUser, isAuth } = require('./services/common');
 
 const connectDB = async () => {
     try {
@@ -24,29 +31,77 @@ const connectDB = async () => {
     }
 };
 
+app.use(session({
+    secret: 'keyboard cat',
+    resave: false, // don't save session if unmodified
+    saveUninitialized: false, // don't create session until something stored
+}));
+app.use(passport.authenticate('session'));
+app.use(express.json());
+app.use(cors({
+    exposedHeaders:['X-Total-Count']
+}));
+
+app.get('/', (req, res) => {
+    res.send("connected");
+});
+
+app.use('/products',isAuth, productRoute);
+app.use('/category',isAuth, categoryRoute);
+app.use('/brands',isAuth, brandsRoute);
+app.use('/auth', authRoute);
+app.use('/user',isAuth, userRoute);
+app.use('/cart',isAuth, cartRoute);
+app.use('/order',isAuth, orderRoute);
+
+passport.use(new LocalStrategy(
+    async function(username, password, done) {
+        try {
+            const user = await User.findOne ({email: username});
+            if(user == null) {
+                // done(iserror, is autorised, error message )
+                return done(null, false, {message: 'invalid credentials'});
+            }
+            crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', async function(err, hashedPassword) {
+            if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
+                return done(null, false, {message: 'invalid credentials'});
+            }
+            else{
+                return done(null, sanitizeUser(user)); // this line send to serliser 
+            }
+            })
+        } catch (error) {
+            console.log(error);
+            done(error)
+            // return res.status(400).json(error);
+        }    
+    }
+));
+
+// this creates session variable req.user on being called from callbacks
+passport.serializeUser(function (user, cb) {
+process.nextTick(function () {
+    // console.log("serialize", user);
+  return cb(null, user);
+});
+});
+
+// this changes session variable req.user when called from authorized request
+
+passport.deserializeUser(function (user, cb) {
+process.nextTick(function () {
+    // console.log("deserialize", user);
+  return cb(null, user);
+});
+});
+
+
+
+app.listen(process.env.SERVER_PORT, ()=>{
+    console.log(`listening on port  ${process.env.SERVER_PORT}`);
+})
 const startApp = async () => {
     await connectDB();
-    app.use(cors({
-        exposedHeaders:['X-Total-Count']
-    }));
-    app.use(express.json());
-
-    app.get('/', (req, res) => {
-        res.send("connected");
-    });
-
-    app.use('/products', productRoute);
-    app.use('/category', categoryRoute);
-    app.use('/brands', brandsRoute);
-    app.use('/auth', authRoute);
-    app.use('/user', userRoute);
-    app.use('/cart', cartRoute);
-    app.use('/order', orderRoute);
-
-    app.listen(process.env.SERVER_PORT, ()=>{
-        console.log(`listening on port  ${process.env.SERVER_PORT}`);
-    })
 }
-
 startApp();
 
