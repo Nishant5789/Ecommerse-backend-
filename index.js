@@ -6,6 +6,10 @@ const session = require('express-session');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const crypto = require('crypto');
+const JwtStrategy = require('passport-jwt').Strategy;
+const ExtractJwt = require('passport-jwt').ExtractJwt;
+const jwt = require('jsonwebtoken');
+
 require('dotenv').config();
 
 const productRoute = require('./routes/product');
@@ -19,6 +23,13 @@ const orderRoute = require('./routes/order');
 const {User} = require('./model/user');
 const { sanitizeUser, isAuth } = require('./services/common');
 
+
+const SECRET_KEY = 'SECRET_KEY';
+// jwt options 
+var opts = {}
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.secretOrKey = SECRET_KEY;
+
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URL, {
@@ -26,11 +37,13 @@ const connectDB = async () => {
             useNewUrlParser: true,
         });
         console.log('Connected to MongoDB');
-     } catch (error) {
+    } catch (error) {
         console.error('Error connecting to MongoDB:', error);
     }
 };
 
+
+// middleware
 app.use(session({
     secret: 'keyboard cat',
     resave: false, // don't save session if unmodified
@@ -46,18 +59,19 @@ app.get('/', (req, res) => {
     res.send("connected");
 });
 
-app.use('/products',isAuth, productRoute);
-app.use('/category',isAuth, categoryRoute);
-app.use('/brands',isAuth, brandsRoute);
+app.use('/products',isAuth(), productRoute);
+app.use('/category',isAuth(), categoryRoute);
+app.use('/brands',isAuth(), brandsRoute);
 app.use('/auth', authRoute);
-app.use('/user',isAuth, userRoute);
-app.use('/cart',isAuth, cartRoute);
-app.use('/order',isAuth, orderRoute);
+app.use('/user',isAuth(), userRoute);
+app.use('/cart',isAuth(), cartRoute);
+app.use('/order',isAuth(), orderRoute);
 
 passport.use(new LocalStrategy(
-    async function(username, password, done) {
+    {usernameField: 'email'},
+    async function(email, password, done) {
         try {
-            const user = await User.findOne ({email: username});
+            const user = await User.findOne ({email: email});
             if(user == null) {
                 // done(iserror, is autorised, error message )
                 return done(null, false, {message: 'invalid credentials'});
@@ -66,10 +80,9 @@ passport.use(new LocalStrategy(
             if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
                 return done(null, false, {message: 'invalid credentials'});
             }
-            else{
-                return done(null, sanitizeUser(user)); // this line send to serliser 
-            }
-            })
+            const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
+            return done(null,{token}); // this line send to serliser 
+            });
         } catch (error) {
             console.log(error);
             done(error)
@@ -77,6 +90,24 @@ passport.use(new LocalStrategy(
         }    
     }
 ));
+
+
+passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
+    console.log(jwt_payload);
+    try {
+        const user = await User.findOne({id: jwt_payload.sub})
+        if (user) {
+            return done(null, sanitizeUser(user));
+        } else {
+            return done(null, false);
+        }
+    } catch (error) {
+        if (err) {
+            return done(err, false);
+        }
+    }
+    }));
+
 
 // this creates session variable req.user on being called from callbacks
 passport.serializeUser(function (user, cb) {
