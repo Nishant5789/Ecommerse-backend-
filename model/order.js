@@ -7,9 +7,10 @@ const orderSchema = new Schema({
     totalAmount: {type: Number},
     totalItems: {type: Number},
     user: {type: Schema.Types.ObjectId, ref:'User', required: true},
-    payment: {type: String, require: true},
-    status: {type: String, default:'pending', require: true},
-    selectedAddress : {type: [Schema.Types.Mixed], require: true},
+    paymentMode: {type: String, require: true},
+    orderStatus: {type: String, default:'Pending', require: true},
+    paymentStatus: {type: String, default:'Pending', require: true},
+    selectedAddress : {type: Schema.Types.ObjectId, ref:'Address', require: true},
   });
 
 const virtualId  = orderSchema.virtual('id');

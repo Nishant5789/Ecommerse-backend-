@@ -1,9 +1,10 @@
 const {Order} = require('../model/order');
 
 module.exports.fetchOrderByUser = async (req, res)=>{
-    const {id} = req.params;
+    const {userId} = req.params;
     try {
-        const docs = await Order.findOne({user: id}).populate("items").populate("user");
+        const docs = await Order.find({user: userId}).populate("items").populate("user").populate("selectedAddress");
+        console.log(docs);
         return res.status(201).json(docs);
     } catch (error) {
         console.log(error);
@@ -12,10 +13,11 @@ module.exports.fetchOrderByUser = async (req, res)=>{
 }
 
 module.exports.updateOrder = async (req, res)=>{
-    const {id} = req.params;
+    const {orderId} = req.params;
     try {
-        const docs = await Order.findByIdAndUpdate(id, req.body);
-        return res.status(201).json(docs);
+        const upatedDocs = await Order.findByIdAndUpdate(orderId, req.body, { new: true });
+        // console.log(upatedDocs);
+        return res.status(201).json(upatedDocs);
     } catch (error) {
         console.log(error);
         return res.status(400).json(error);
@@ -54,23 +56,13 @@ module.exports.fetchAllOrder = async (req, res)=>{
 
 
 module.exports.createOrder = async (req, res)=>{
-
     // {
-    //     "items": [
-    //       "648c599daf9199aa139b2863"
-    //     ],
+    //     "items": ["648dbb70d2ebd1b1455464b3"],
     //     "totalAmount": 700,
     //     "totalItems": 1,
     //     "user": "648d6af31a181df43848f424",
-    //     "payment": "CASH",
-    //     "status": "Delivered",
-    //     "selectedAddress": {
-    //       "name": "nishant",
-    //       "state": "gujarat",
-    //       "district": "killa pardi",
-    //       "house": "shivpoojan residency",
-    //       "houseno": "A-102"
-    //     }
+    //     "paymentMode": "CASH",
+    //     "selectedAddress": "64956049fba1a19f14db425a"
     //   }
 
     try {
@@ -85,8 +77,8 @@ module.exports.createOrder = async (req, res)=>{
 module.exports.deleteOrder = async (req, res)=>{
     // http://localhost:8080/order/:orderid 
     try {
-        await Order.findByIdAndDelete(req.params.id)
-        .catch(error=> console.log(error));
+        await Order.findByIdAndDelete(req.params.orderId)
+        // .catch(error=> console.log(error));
         return res.status(201).json({});
     } catch (error) {
         console.log(error);

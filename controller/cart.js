@@ -1,11 +1,19 @@
 const {Cart} = require('../model/cart');
 
 module.exports.addToCart = async (req, res)=>{
-    
+
+    const {product, user} = req.body;
     try {
-        const cart = new Cart(req.body);
-        await cart.save();
-        return res.status(201).json(cart);
+        const exitingProduct = await Cart.findOne({product, user});
+        // console.log(exitingProduct);
+        if(exitingProduct != null){
+            return res.status(201).json({"msg": "Product already exists"});
+        }
+        else{
+            const cart = new Cart(req.body);
+            await cart.save();
+            return res.status(201).json(cart);
+        }
     } catch (error) {
         console.log(error);
         return res.status(400).json(error);
@@ -14,8 +22,10 @@ module.exports.addToCart = async (req, res)=>{
 
 module.exports.fetchCartByUser = async (req, res)=>{
     const {id} = req.params;
+    // const {id} = req.user; for authenticated
     try {
-        const cart = await Cart.findOne({user: id}).populate("product").populate("user");
+        const cart = await Cart.find({user: id}).populate("product");
+        console.log(cart);
         return res.status(201).json(cart);
     } catch (error) {
         console.log(error);
@@ -26,6 +36,7 @@ module.exports.fetchCartByUser = async (req, res)=>{
 module.exports.updateCart = async (req, res)=>{
     // {"quantity": 3}
     http://localhost:8080/
+    // console.log(req.params.id, req.body);
     try {
         const docs = await Cart.findByIdAndUpdate(req.params.id, req.body, {new: true});
         res.status(201).json(docs);
