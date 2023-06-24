@@ -2,8 +2,14 @@ const {Category} = require('../model/category');
 
 
 module.exports.fetchCategory = async (req, res)=>{
+    try {
+        const categorydocs = await Category.find({});
 
-    
+        return res.status(200).json(categorydocs);
+    } catch (err) {
+        console.log(err);
+        return res.status(400).json(error);
+    }
 }
 module.exports.createCategory = async (req, res)=>{
     

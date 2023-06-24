@@ -36,8 +36,8 @@ module.exports.loginUser = async (req, res, next)=>{
     return res.cookie("jwt", req.user.token, {expire: 360000 + Date.now(), httponly: true}).status(201).json(req.user.token);
 }
 module.exports.checkUser = async (req, res, next)=>{
-    try {
-        console.log("called");
+    try {          
+        // console.log("called");
         if (req.user) {
             return res.json({status:"success",user: req.user});
           } else {

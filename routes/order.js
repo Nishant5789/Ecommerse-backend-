@@ -3,9 +3,9 @@ const { createOrder, deleteOrder, fetchOrderByUser, fetchAllOrder, updateOrder }
 const router = require('express').Router();
 
 router.post('/', createOrder);
-router.delete('/:id', deleteOrder);
-router.get('/:id', fetchOrderByUser);
+router.delete('/:orderId', deleteOrder);
+router.get('/:userId', fetchOrderByUser);
 router.get('/', fetchAllOrder);
-router.patch('/:id', updateOrder);
+router.patch('/:orderId', updateOrder);
 
 module.exports = router;

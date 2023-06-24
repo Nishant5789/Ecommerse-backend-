@@ -9,6 +9,8 @@ const crypto = require('crypto');
 const JwtStrategy = require('passport-jwt').Strategy;
 const ExtractJwt = require('passport-jwt').ExtractJwt;
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
+
 
 require('dotenv').config();
 
@@ -18,16 +20,17 @@ const brandsRoute = require('./routes/brands');
 const authRoute = require('./routes/auth');
 const cartRoute = require('./routes/cart');
 const userRoute = require('./routes/user');
+const addressRoute = require('./routes/address');
 const orderRoute = require('./routes/order');
 
 const {User} = require('./model/user');
-const { sanitizeUser, isAuth } = require('./services/common');
+const { sanitizeUser, isAuth, cookieExtractor } = require('./services/common');
 
 
 const SECRET_KEY = 'SECRET_KEY';
 // jwt options 
 var opts = {}
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.jwtFromRequest = cookieExtractor;
 opts.secretOrKey = SECRET_KEY;
 
 const connectDB = async () => {
@@ -49,6 +52,7 @@ app.use(session({
     resave: false, // don't save session if unmodified
     saveUninitialized: false, // don't create session until something stored
 }));
+app.use(cookieParser());
 app.use(passport.authenticate('session'));
 app.use(express.json());
 app.use(cors({
@@ -59,21 +63,29 @@ app.get('/', (req, res) => {
     res.send("connected");
 });
 
-app.use('/products',isAuth(), productRoute);
-app.use('/category',isAuth(), categoryRoute);
-app.use('/brands',isAuth(), brandsRoute);
+app.use('/products', productRoute);
+app.use('/category', categoryRoute);
+app.use('/brands', brandsRoute);
 app.use('/auth', authRoute);
-app.use('/user',isAuth(), userRoute);
-app.use('/cart',isAuth(), cartRoute);
-app.use('/order',isAuth(), orderRoute);
+app.use('/user', userRoute);
+app.use('/address',addressRoute);
+app.use('/cart', cartRoute);
+app.use('/order', orderRoute);
+// app.use('/products',isAuth(), productRoute);
+// app.use('/category',isAuth(), categoryRoute);
+// app.use('/brands',isAuth(), brandsRoute);
+// app.use('/auth', authRoute);
+// app.use('/user',isAuth(), userRoute);
+// app.use('/cart',isAuth(), cartRoute);
+// app.use('/order',isAuth(), orderRoute);
 
 passport.use(new LocalStrategy(
-    {usernameField: 'email'},
+    {usernameField: 'email'} ,
     async function(email, password, done) {
         try {
-            const user = await User.findOne ({email: email});
+            const user = await User.findOne({email: email});
             if(user == null) {
-                // done(iserror, is autorised, error message )
+                // done(iserror, isautorised, error message)
                 return done(null, false, {message: 'invalid credentials'});
             }
             crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', async function(err, hashedPassword) {
@@ -82,7 +94,7 @@ passport.use(new LocalStrategy(
             }
             const token = jwt.sign(sanitizeUser(user), SECRET_KEY);
             return done(null,{token}); // this line send to serliser 
-            });
+            }); 
         } catch (error) {
             console.log(error);
             done(error)
@@ -91,11 +103,10 @@ passport.use(new LocalStrategy(
     }
 ));
 
-
 passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
     console.log(jwt_payload);
     try {
-        const user = await User.findOne({id: jwt_payload.sub})
+        const user = await User.findById(jwt_payload.id);
         if (user) {
             return done(null, sanitizeUser(user));
         } else {
@@ -113,12 +124,11 @@ passport.use('jwt',new JwtStrategy(opts, async function(jwt_payload, done) {
 passport.serializeUser(function (user, cb) {
 process.nextTick(function () {
     // console.log("serialize", user);
-  return cb(null, user);
+  return cb(null, user);  
 });
 });
 
 // this changes session variable req.user when called from authorized request
-
 passport.deserializeUser(function (user, cb) {
 process.nextTick(function () {
     // console.log("deserialize", user);
