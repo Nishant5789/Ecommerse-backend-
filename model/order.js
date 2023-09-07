@@ -5,7 +5,7 @@ const {Schema} = mongoose;
 const orderSchema = new Schema({
     items: {type: [Schema.Types.ObjectId], ref: 'Product', required: true},
     totalAmount: {type: Number},
-    totalItems: {type: Number},
+    totalItems: [{type: Number}],
     user: {type: Schema.Types.ObjectId, ref:'User', required: true},
     paymentMode: {type: String, require: true},
     orderStatus: {type: String, default:'Pending', require: true},
