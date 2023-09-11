@@ -1,4 +1,5 @@
 const {Cart} = require('../model/cart');
+const ObjectId = require('mongodb').ObjectId;
 
 module.exports.addToCart = async (req, res)=>{
 
@@ -51,6 +52,19 @@ module.exports.deleteFromCart = async (req, res)=>{
         await Cart.findByIdAndDelete(req.params.id);
         res.status(201).json({});
     } catch (error) { 
+        console.log(error);
+        return res.status(400).json(error);
+    }
+}
+
+module.exports.removeAllItemFromCart = async (req, res) => {
+    // http://localhost:8080/order/removeAllitems/:userid ;
+
+    const userId = req.params.userId;
+    try {
+        await Cart.deleteMany({ user: userId })
+        res.status(201).json({});
+    } catch (error) {
         console.log(error);
         return res.status(400).json(error);
     }

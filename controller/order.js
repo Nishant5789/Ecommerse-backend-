@@ -46,14 +46,16 @@ module.exports.fetchAllOrder = async (req, res)=>{
             query = query.skip(pageSize*(page-1)).limit(pageSize);
         }
 
+        query = query.populate("items").populate("user").populate("selectedAddress");
+        
         const docs = await query.exec();
+        console.log(docs);
         res.status(201).json(docs);
     } catch (error) {
         console.log(error);
         return res.status(400).json(error);
     }
 }
-
 
 module.exports.createOrder = async (req, res)=>{
     // {

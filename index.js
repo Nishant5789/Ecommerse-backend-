@@ -33,17 +33,17 @@ var opts = {}
 opts.jwtFromRequest = cookieExtractor;
 opts.secretOrKey = SECRET_KEY;
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URL, {
-            useUnifiedTopology: true,
-            useNewUrlParser: true,
-        });
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-    }
-};
+    const connectDB = async () => {
+        try {
+            await mongoose.connect(process.env.MONGO_URL, {
+                useUnifiedTopology: true,
+                useNewUrlParser: true,
+            });
+            console.log('Connected to MongoDB');
+        } catch (error) {
+            console.error('Error connecting to MongoDB:', error);
+        }
+    };
 
 
 // middleware
