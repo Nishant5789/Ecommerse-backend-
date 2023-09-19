@@ -37,8 +37,8 @@ module.exports.updateProduct = async (req, res)=>{
 module.exports.fetchAllProducts = async (req, res)=>{
 
     /// url - http://localhost:8080/products?category=laptops&_sort=price&_order=desc&_page=2&_limit=2
-    // filter = {"category":["smartphone","laptops"]}
-    // sort = {_sort:"price",_order="desc"}
+    // filter = {"category":["smartphone","laptops"]} 
+    // sort = {_sort:"price",_order="desc"} 
     // pagination = {_page:1,_limit=10}  
     
     try {

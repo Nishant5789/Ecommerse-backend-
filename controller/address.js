@@ -1,7 +1,7 @@
 const { Address } = require("../model/address");
 
 module.exports.addUserAddress = async (req, res)=>{
-    const {user} = req.params;
+    const {id:user} = req.user;
     try {
         const address = new Address({...req.body, user});
         console.log(address);
@@ -13,7 +13,7 @@ module.exports.addUserAddress = async (req, res)=>{
     }
 }
 module.exports.fetchAddressesByUser = async (req, res)=>{
-    const {user} = req.params;
+    const {id:user} = req.user;
     try {
         const addressDocs = await Address.find({user});
         return res.status(201).json(addressDocs);
