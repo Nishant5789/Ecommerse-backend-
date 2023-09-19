@@ -11,8 +11,9 @@ module.exports.isAuth = (req, res, done) => {
 module.exports.cookieExtractor = function(req) {
     let token = null;
     if (req && req.cookies) {
-      token = req.cookies['jwt'];
-    }
+        // console.log(req.cookies['jwt']);
+        token = req.cookies['jwt'];
+      }
     return token;
   };
   

@@ -1,7 +1,8 @@
 const {Order} = require('../model/order');
 
 module.exports.fetchOrderByUser = async (req, res)=>{
-    const {userId} = req.params;
+    const {id} = req.user;
+    const userId = id;
     try {
         const docs = await Order.find({user: userId}).populate("items").populate("user").populate("selectedAddress");
         console.log(docs);
@@ -66,9 +67,9 @@ module.exports.createOrder = async (req, res)=>{
     //     "paymentMode": "CASH",
     //     "selectedAddress": "64956049fba1a19f14db425a"
     //   }
-
+    const {id} = req.user;
     try {
-        const order = new Order(req.body);
+        const order = new Order({...req.body, user: id});
         await order.save()
         return res.status(201).json(order);
     } catch (error) {
@@ -76,6 +77,7 @@ module.exports.createOrder = async (req, res)=>{
         return res.status(400).json(error);
     }
 }
+
 module.exports.deleteOrder = async (req, res)=>{
     // http://localhost:8080/order/:orderid 
     try {
