@@ -39,6 +39,16 @@ module.exports.loginUser = async (req, res, next) => {
     return res.cookie("jwt", req.user.token, { expire: 360000 + Date.now(), httponly: true }).status(201).json(req.user.token);
 }
 
+module.exports.logout = async (req, res) => {
+    return res
+      .cookie('jwt', null, {
+        expires: new Date(Date.now()),
+        httpOnly: true,
+      })
+      .sendStatus(200)
+  };
+
+
 module.exports.checkUser = async (req, res, next) => {
     try {
         // console.log("called");
